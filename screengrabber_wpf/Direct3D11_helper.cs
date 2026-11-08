@@ -65,8 +65,9 @@ namespace screengrabber_wpf
 
 
         private ID3D11Buffer? _positionBuffer;
+        private ID3D11Buffer? _scrollBuffer;
 
-    
+
 
         private readonly object _offsetLock = new();
 
@@ -74,8 +75,10 @@ namespace screengrabber_wpf
         private struct PositionConstants
         {
             public Vector2 Offset;
-            public Vector2 Padding;
+            public float Time;
+            public float Speed;
         }
+
 
         private readonly Stopwatch _stopwatch = new();
         private long _lastTimestamp;
@@ -147,6 +150,7 @@ namespace screengrabber_wpf
             };
             setShader();
             _positionBuffer = _device.CreateBuffer(bufferDesc);
+ 
 
 
             //Tényleges rögzítés
@@ -310,16 +314,19 @@ namespace screengrabber_wpf
             return;
 
             PositionConstants constants;
+        
          
             lock (_offsetLock)
             {
 
-                  constants = new PositionConstants // a változók átadása
-                  {
-                      Offset = VisualEffektek.Offset,
-                      Padding = Vector2.Zero
-                  };
-                
+                constants = new PositionConstants
+                {
+                    Offset = VisualEffektek.Offset,
+                    Time = (float)_stopwatch.Elapsed.TotalSeconds,
+                    Speed = 100.0f
+                };
+
+
             }
 
             _context.UpdateSubresource(in constants, _positionBuffer);//átadjuk a Shadernek a változókat
@@ -361,7 +368,8 @@ namespace screengrabber_wpf
         private void CaptureDesktopFrame() {
             if (_duplication != null && _context != null && _gpuTexture != null)
             {
-                var result = _duplication.AcquireNextFrame(1, out _, out IDXGIResource desktopResource);
+                var result = _duplication.AcquireNextFrame(1, out var frameInfo, out IDXGIResource desktopResource);
+
                 if (result.Success)
                 {
                     try

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 using System.Threading;
@@ -98,6 +99,7 @@ namespace screengrabber_wpf
 
         private const uint SWP_NOACTIVATE = 0x0010;
 
+        const int TIME = 45;
 
         //Kép megjelenítésért
         private Direct3D11_helper? _d3d;
@@ -106,22 +108,21 @@ namespace screengrabber_wpf
         private readonly DispatcherTimer _shaderTimer = new();
         private readonly Random _random = new();
 
+ 
+
         public MainWindow()
 
         {
 
             InitializeComponent();
 
-
-
             this.IsHitTestVisible = false;
 
             this.Closed += MainWindow_Closed;
 
-            _shaderTimer.Interval = TimeSpan.FromSeconds(1);
-            _shaderTimer.Tick += Clock;
-            _shaderTimer.Start();
-
+              _shaderTimer.Interval = TimeSpan.FromSeconds(TIME);
+              _shaderTimer.Tick += Clock;
+              _shaderTimer.Start();
         }
      
 
@@ -155,18 +156,24 @@ namespace screengrabber_wpf
             source?.AddHook(HwndHook);
 
         }
-
-       private void Clock(object? sender, EventArgs e)
+        HashSet<int> prevs = new HashSet<int>();
+        private void Clock(object? sender, EventArgs e)
         {
             int index = _random.Next(ShaderCompiler.Shaders.Length);
-
+            if (prevs.Count >= ShaderCompiler.Shaders.Length) {
+                prevs.Clear();
+            }
+            while (prevs.Contains(index)) {
+                index = _random.Next(ShaderCompiler.Shaders.Length);
+            }
+            prevs.Add(index);
             ShaderCompiler.SelectedShader =
                 (ShaderCompiler.ShaderNames)index;
             _d3d.setShader();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e) {
-            if (e.Key == Key.A) {
+          /*  if (e.Key == Key.A) {
              //   ShaderCompiler.SelectedShader = ShaderCompiler.ShaderNames.DVD;
             }
             if (e.Key == Key.S)
@@ -178,13 +185,13 @@ namespace screengrabber_wpf
                 ShaderCompiler.SelectedShader = ShaderCompiler.ShaderNames.BW;
             }
 
-            _d3d.setShader();
+            _d3d.setShader();*/
 
         }
 
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
             _d3d = new Direct3D11_helper();
 
             // 1. Direct3D és képernyőrögzítés inicializálása.
@@ -224,16 +231,6 @@ namespace screengrabber_wpf
 
             return IntPtr.Zero;
         }
-
-
-  
-      
-
-        private const int _previewWidth = 1920;
-        private const int _previewHeight = 1080;
-
-
-
 
         private void MainWindow_Closed(
      object? sender,

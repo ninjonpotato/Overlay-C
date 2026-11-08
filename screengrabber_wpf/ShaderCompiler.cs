@@ -8,12 +8,12 @@ namespace screengrabber_wpf
 {
     public static class ShaderCompiler
     {
-        public static string[] Shaders = ["blackAndWhite","invertShader","Dvd"];
+        public static string[] Shaders = ["blackAndWhite","Dvd","Mirror","Rotate","Colorblind","WhiteOnly","Blur","Scroll","Split"];
         public enum ShaderNames
         {
-            BW, INVERT,DVD
+            BW,DVD,MIRROR,ROTATE,BLIND,WHITE,BLUR,SCROLL,SPLIT
         }
-        private static int _shaderIndex = (int)ShaderNames.BW;
+        private static int _shaderIndex = (int)ShaderNames.DVD;
 
         public static ShaderNames SelectedShader
         {

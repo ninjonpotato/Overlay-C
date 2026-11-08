@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -108,22 +109,15 @@ namespace screengrabber_wpf
             return DefWindowProc(hwnd, msg, wParam, lParam);
         }
 
-        private const uint SWP_NOSIZE = 0x0001;
+        [DllImport("user32.dll")]
+        private static extern int ShowCursor(bool show);
 
-        private const uint SWP_NOZORDER = 0x0004;
-
-        public void Mozgatas(Vector2 offset) {
-            SetWindowPos(
-          Handle,
-          IntPtr.Zero,
-          (int)offset.X, (int)offset.Y,
-          0, 0,
-          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
-  );
-        }
-
+        int _w, _h;
         public NativeOverlay(int x, int y, int width, int height)
         {
+            ShowCursor(false);
+            _w = width;
+            _h = height;
             IntPtr instance = GetModuleHandle(null);
 
             var wc = new WNDCLASSEX
@@ -183,17 +177,12 @@ namespace screengrabber_wpf
                 throw new Win32Exception(error);
             }
 
-                 bool affinity = SetWindowDisplayAffinity(
-                      _hwnd, WDA_EXCLUDEFROMCAPTURE);
-
-            //    bool affinity = SetWindowDisplayAffinity(_hwnd, 0);
-       //     SetWindowDisplayAffinity(_hwnd, WDA_EXCLUDEFROMCAPTURE);
-      /*      System.Diagnostics.Debug.WriteLine(
-                $"Native overlay HWND: 0x{_hwnd.ToInt64():X}");
-            System.Diagnostics.Debug.WriteLine(
-                $"Kizárás a felvételből: {affinity}, " +
-                $"hiba: {(affinity ? 0 : Marshal.GetLastWin32Error())}");*/
+            bool affinity = SetWindowDisplayAffinity(
+                 _hwnd, WDA_EXCLUDEFROMCAPTURE);
         }
+       
+
+
 
         public void Dispose()
         {
@@ -201,6 +190,7 @@ namespace screengrabber_wpf
                 return;
 
             _disposed = true;
+          
 
             if (_hwnd != IntPtr.Zero)
             {

@@ -4,6 +4,7 @@
         Loaded="Window_Loaded"
         Title="ScreenGrabber Preview"
         Width="800"
+        Cursor="No"
         Height="450"
         WindowStyle="SingleBorderWindow"
         ShowInTaskbar="True"
